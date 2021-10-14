@@ -1,0 +1,16 @@
+{
+  "jar-file-path" : "/home/jars/tr01-assembly.jar",
+  "class" : "Main",
+  "app-name" : "LoadTr01App",
+  "spark-params" : {
+    "master" : "local",
+    "deploy-mode" : "cluster",
+    "executor-cores" : "1",
+    "executor-memory" : "1G",
+    "driver-memory" : "1G"
+  },
+  "tr-params" : {
+    "jbdc-url" : "jdbc:postgresql://127.0.0.1:5432/db",
+    "jdbc-user" : "admin"
+  }
+}
