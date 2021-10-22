@@ -10,6 +10,7 @@ lazy val scalaLab =
     .disablePlugins(AssemblyPlugin)
     .settings(name := "scalalab")
     .aggregate(labRunner, labTR01)
+    .aggregate(labRunner, labTR03)
 
 val labRunnerMain = Some("example.com.scalalab.lab-runner.Main")
 
@@ -36,9 +37,23 @@ lazy val labTR01 =
       )
     )
 
+val labTR03Main = Some("example.com.scalalab.lab-tr03.Main")
+
+lazy val labTR03 =
+  (project in file("./lab-tr03"))
+    .enablePlugins(AssemblyPlugin)
+    .settings(
+      mainClass in (Compile, run) := labTR03Main,
+      mainClass in assembly := labTR03Main,
+      assemblyJarName in assembly := s"lab-tr03-assembly.jar",
+      libraryDependencies ++= Seq(
+        Spark.Core,
+        Spark.Sql
+      )
+    )
+
 assemblyMergeStrategy in assembly := {
   case PathList("META-INF", xs @ _*) => MergeStrategy.discard
   case x => MergeStrategy.first
 }
 
-// See https://www.scala-sbt.org/1.x/docs/Using-Sonatype.html for instructions on how to publish to Sonatype.
