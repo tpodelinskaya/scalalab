@@ -42,8 +42,8 @@ lazy val labTR02 =
   (project in file("./lab-tr02"))
     .enablePlugins(AssemblyPlugin)
     .settings(
-      mainClass in (Compile, run) := labTR01Main,
-      mainClass in assembly := labTR01Main,
+      mainClass in (Compile, run) := labTR02Main,
+      mainClass in assembly := labTR02Main,
       assemblyJarName in assembly := s"lab-tr02-assembly.jar",
       libraryDependencies ++= Seq(
         Spark.Core,
