@@ -9,7 +9,7 @@ lazy val scalaLab =
   Project(id = "scalalab", base = file("."))
     .disablePlugins(AssemblyPlugin)
     .settings(name := "scalalab")
-    .aggregate(labRunner, labTR01)
+    .aggregate(labRunner, labTR01, labTR02)
 
 val labRunnerMain = Some("example.com.scalalab.lab-runner.Main")
 
@@ -33,6 +33,21 @@ lazy val labTR01 =
       assemblyJarName in assembly := s"lab-tr01-assembly.jar",
       libraryDependencies ++= Seq(
         Spark.Core
+      )
+    )
+
+val labTR02Main = Some("example.com.scalalab.lab-tr02.Main")
+
+lazy val labTR02 =
+  (project in file("./lab-tr02"))
+    .enablePlugins(AssemblyPlugin)
+    .settings(
+      mainClass in (Compile, run) := labTR01Main,
+      mainClass in assembly := labTR01Main,
+      assemblyJarName in assembly := s"lab-tr02-assembly.jar",
+      libraryDependencies ++= Seq(
+        Spark.Core,
+        Spark.Sql
       )
     )
 
