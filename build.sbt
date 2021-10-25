@@ -19,7 +19,10 @@ lazy val labRunner =
     .settings(
       mainClass in (Compile, run) := labRunnerMain,
       mainClass in assembly := labRunnerMain,
-      assemblyJarName in assembly := s"lab-runner-assembly.jar"
+      assemblyJarName in assembly := s"lab-runner-assembly.jar",
+      libraryDependencies ++= Seq(
+        Other.gson
+      )
     )
 
 val labTR01Main = Some("example.com.scalalab.lab-tr01.Main")

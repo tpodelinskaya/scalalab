@@ -16,4 +16,9 @@ object Dependencies {
     val Sql =   "org.apache.spark" %% "spark-sql" % Version.sparkSql % "provided"
 
   }
+
+  object Other {
+    val gson = "com.google.code.gson" % "gson" % "2.8.2"
+  }
+
 }
