@@ -20,7 +20,7 @@ sbt package
 ```
 Запуск результата: 
 ```
-spark-submit --class Main --master local scalalab/lab-tr03/target/scala-2.12/labtr03_2.12-0.1.0.jar inpath=/home/test=dir mask=\*.txt outpath=./out_path
+spark-submit --class Main scalalab/lab-tr03/target/scala-2.12/labtr03_2.12-0.1.0.jar inpath=/home/test=dir mask=\*.txt outpath=./out_path
 ```
 
 
