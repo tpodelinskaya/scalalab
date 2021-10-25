@@ -5,21 +5,12 @@ import scala.util.matching.Regex
 object Main {
   def main(args: Array[String]): Unit = {
     println("Hello, I'm TR03!")
-    println(args.mkString(" "))
       
-        val keyValPattern: Regex = "^([\\w]+)=([\\w=\\*\\.\\/ ]+)$".r;
-        val map = args.map(arg => {
+    val keyValPattern: Regex = "^([\\w]+)=([\\w=\\*\\.\\/ ]+)$".r;
+    val map = args.map(arg => {
           val keyVal = keyValPattern.findPrefixMatchOf(arg).getOrElse(throw new RuntimeException("not valid arg"))
           (keyVal.group(1), keyVal.group(2))
-        }).toMap
-
-/*    val listOfTuples = for (arg <- args) yield {
-      val indexVar = arg.indexOf("=")
-      val argParameter = arg.substring(indexVar + 1)
-      val argNameVar = arg.substring(0, indexVar)
-      (argNameVar, argParameter)
-    }
-    val map = listOfTuples.toMap*/
+    }).toMap
 
     println(s"input data: $map")
 
