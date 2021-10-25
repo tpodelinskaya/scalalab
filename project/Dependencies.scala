@@ -5,8 +5,8 @@ object Dependencies {
   val scalaCompat: String = "2.12.12"
 
   private object Version {
-    val spark              = "3.2.0"
-    val sparkSql           = "3.2.0"
+    val spark              = "2.4.8"
+    val sparkSql           = "2.4.8"
 
   }
 
