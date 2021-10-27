@@ -3,8 +3,6 @@
   "class" : "Main",
   "app-name" : "LoadTr03App",
   "spark-params" : {
-    "master" : "local",
-    "deploy-mode" : "cluster",
     "executor-cores" : "1",
     "executor-memory" : "1G",
     "driver-memory" : "1G"

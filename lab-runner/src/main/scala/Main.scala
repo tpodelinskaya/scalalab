@@ -1,49 +1,60 @@
-import com.google.gson.{JsonElement, JsonParser}
+import com.google.gson.{JsonElement, JsonObject, JsonParser}
 
-import java.io.FileReader
-import scala.sys.process._
+import java.io.{File, FileReader}
 
 object Main {
 
+  //It would be worth connecting a logger instead of print
   def main(args: Array[String]): Unit = {
     println("Hello! I'm Runner!")
 
-    implicit def anyRefToString(any: AnyRef) = any.toString
+    val sparkSubmit = if (args.length == 2) args(1) else "spark-submit"
+    val dirConf = new File(args(0)).listFiles(
+      (file: File) => file.exists() && file.getName.endsWith(".json")
+    ).map(_.toPath.toString)
+
+    println("Input configs" + dirConf.mkString(" "))
+
+    dirConf.foreach(runJarOnConfig(sparkSubmit)(_))
+  }
+
+  def runJarOnConfig(sparkSubmit: String)(pathToJar: String): Unit = {
+    import scala.sys.process._
 
     implicit def jsonElementGetString(json: JsonElement) = json.getAsString
 
+    implicit def jsonElementToJsonObject(json: JsonElement) = json.getAsJsonObject
 
-    val jsonConf = new JsonParser().parse(new FileReader(args(0))).getAsJsonObject
-    val sparkSubmit = if (args.length == 2) args(1) else "spark-submit"
+    def jsonParameterToString(jsonParameters: JsonObject, parameterFormat: (String, String) => String): String = {
+      jsonParameters.keySet().toArray.map(x => {
+        parameterFormat(x.toString, jsonParameters.get(x.toString).getAsString)
+      }).mkString(" ")
+    }
 
-    val classMain: String = jsonConf.get("class")
-    val appName = jsonConf.get("app-name").toString //right
-    val jarFile: String = jsonConf.get("jar-file-path")
+    val confJson = new JsonParser().parse(new FileReader(pathToJar)).getAsJsonObject
 
-    val sparkParams = jsonConf.get("spark-params").getAsJsonObject
-    val master = sparkParams.get("master") //Call error
-    val deployMode = sparkParams.get("deploy-mode") //Call error
-    val executorCores: String = sparkParams.get("executor-cores")
-    val executorMemory: String = sparkParams.get("executor-memory")
-    val driverMemory: String = sparkParams.get("driver-memory")
+    val classMain: String = confJson.get("class")
+    val appName = confJson.get("app-name").toString //right, if parameter type string
+    val jarFile: String = confJson.get("jar-file-path")
 
-    val trParamsJson = jsonConf.get("tr-params").getAsJsonObject
-    val trParams = trParamsJson.keySet().toArray().map(x => {
-      s"$x=${trParamsJson.get(x).getAsString}"
-    }).mkString(" ")
-
+    val sparkParams = jsonParameterToString(
+      confJson.get("spark-params"),
+      (x1: String, x2: String) => s"--$x1 $x2"
+    )
+    val trParams = jsonParameterToString(
+      confJson.get("tr-params"),
+      (x1: String, x2: String) => s"$x1=$x2"
+    )
 
     val command =
       f"""$sparkSubmit
           --name $appName
-         --executor-memory $executorMemory
-         --driver-memory $driverMemory
-         --executor-cores $executorCores
+          $sparkParams
          --class $classMain
          ${jarFile} $trParams""".stripMargin
 
     println(command)
 
-    (command).!
+    command.!
   }
 }

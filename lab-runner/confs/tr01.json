@@ -1,10 +1,8 @@
 {
-  "jar-file-path" : "/home/jars/tr01-assembly.jar",
+  "jar-file-path" : "lab-tr01/target/scala-2.12/labtr01_2.12-0.1.0.jar",
   "class" : "Main",
   "app-name" : "LoadTr01App",
   "spark-params" : {
-    "master" : "local",
-    "deploy-mode" : "cluster",
     "executor-cores" : "1",
     "executor-memory" : "1G",
     "driver-memory" : "1G"
