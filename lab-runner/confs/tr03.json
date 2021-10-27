@@ -10,7 +10,8 @@
     "driver-memory" : "1G"
   },
   "tr-params" : {
-    "jbdc-url" : "jdbc:postgresql://127.0.0.1:5432/db",
-    "jdbc-user" : "admin"
+    "inpath" : "/home/redcrab/test=dir",
+    "mask" : "*.txt",
+    "outpath" : "./out_path"
   }
 }
