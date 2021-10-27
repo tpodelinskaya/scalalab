@@ -6,12 +6,13 @@ object Dependencies {
 
   private object Version {
     val spark              = "2.4.8"
+    val sparkSQL           = "3.0.0"
   }
 
   object Spark {
 
-    val Core =  "org.apache.spark" %% "spark-core" % Version.spark % "provided"
-    val Sql = "org.apache.spark" %% "spark-sql" % Version.spark % "provided"
+    val Core =  "org.apache.spark" %% "spark-core" % Version.spark
+    val Sql = "org.apache.spark" %% "spark-sql" % Version.sparkSQL
 
 
   }
