@@ -8,14 +8,33 @@ object Main {
   def main(args: Array[String]): Unit = {
     println("Hello! I'm Runner!")
 
-    val sparkSubmit = if (args.length == 2) args(1) else "spark-submit"
-    val dirConf = new File(args(0)).listFiles(
+
+    val (confDirKey, sparkKey) = ("confDir", "spark")
+
+    def getOption(list: List[String]): Map[String, String] = {
+      def nextOption(list: List[String], map: Map[String, String]): Map[String, String] = {
+        list match {
+          case Nil => map
+          case "--spark" :: value :: tail => nextOption(tail, Map(sparkKey -> value) ++ map)
+          case "--confDir" :: tail => nextOption(tail.tail, Map(confDirKey -> tail.head) ++ map)
+          case _ => throw new RuntimeException("Not valid optional")
+        }
+      }
+      nextOption(list, Map())
+    }
+
+
+    val mapOption = getOption(args.toList)
+
+
+    val sparkSubmit = mapOption.get(sparkKey).getOrElse("spark-submit")
+    val confDir = new File(mapOption.get(confDirKey).getOrElse(throw new RuntimeException("Key confDir not found"))).listFiles(
       (file: File) => file.exists() && file.getName.endsWith(".json")
     ).map(_.toPath.toString)
 
-    println("Input configs" + dirConf.mkString(" "))
+    println("Input configs" + confDir.mkString(" "))
 
-    dirConf.foreach(runJarOnConfig(sparkSubmit)(_))
+    confDir.foreach(runJarOnConfig(sparkSubmit)(_))
   }
 
   def runJarOnConfig(sparkSubmit: String)(pathToJar: String): Unit = {
@@ -48,10 +67,10 @@ object Main {
 
     val command =
       f"""$sparkSubmit
-          --name $appName
-          $sparkParams
-         --class $classMain
-         ${jarFile} $trParams""".stripMargin
+         | --name $appName
+         | $sparkParams
+         | --class $classMain
+         | ${jarFile} $trParams""".stripMargin.replace("\n", " ")
 
     println(command)
 
