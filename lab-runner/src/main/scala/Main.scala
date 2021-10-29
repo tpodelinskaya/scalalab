@@ -1,6 +1,7 @@
 import com.google.gson.{JsonObject, JsonParser}
 
 import java.io.{File, FileReader}
+import scala.annotation.tailrec
 import scala.sys.exit
 
 object Main {
@@ -22,6 +23,7 @@ object Main {
         |""".stripMargin
 
     def getOption(list: List[String]): Map[String, String] = {
+      @tailrec
       def nextOption(list: List[String], map: Map[String, String]): Map[String, String] = {
         list match {
           case Nil => map
@@ -29,7 +31,7 @@ object Main {
           case "--confDir" :: value :: tail => nextOption(tail, Map(confDirKey -> value) ++ map)
           case "--stopOnErrorFormat" :: value :: tail => nextOption(tail, Map(stopOnErrorFormatKey -> value) ++ map)
           case "--stopOnRunError" :: value :: tail => nextOption(tail, Map(stopOnRunErrorKey -> value) ++ map)
-          case "--help" :: tail => println(help); exit(0)
+          case "--help" :: _ => println(help); exit(0)
           case _ => throw new RuntimeException("Not valid optional")
         }
       }
@@ -40,11 +42,11 @@ object Main {
 
     val mapOption = getOption(args.toList)
 
-    val stopOnErrorFormat: Boolean = mapOption.get(stopOnErrorFormatKey).getOrElse(true).toString.toBoolean
-    val stopOnRunError = mapOption.get(stopOnRunErrorKey).getOrElse(true).toString.toBoolean
+    val stopOnErrorFormat: Boolean = mapOption.getOrElse(stopOnErrorFormatKey, true).toString.toBoolean
+    val stopOnRunError = mapOption.getOrElse(stopOnRunErrorKey, true).toString.toBoolean
 
     if (mapOption.contains(sparkKey)) {
-      if (!new File(mapOption.get(sparkKey).get).canExecute) {
+      if (!new File(mapOption(sparkKey)).canExecute) {
         throw new Exception("Not found spark-submit")
       }
     } else {
@@ -52,14 +54,14 @@ object Main {
     }
 
     if (mapOption.contains(confDirKey)) {
-      if (!new File(mapOption.get(confDirKey).get).isDirectory) {
+      if (!new File(mapOption(confDirKey)).isDirectory) {
         throw new RuntimeException("Not found dir with configs")
       }
     }
 
 
-    val sparkSubmit = mapOption.get(sparkKey).getOrElse("spark-submit")
-    val confDir = new File(mapOption.get(confDirKey).get).listFiles(
+    val sparkSubmit = mapOption.getOrElse(sparkKey, "spark-submit")
+    val confDir = new File(mapOption(confDirKey)).listFiles(
       (file: File) => file.exists() && file.getName.endsWith(".json")
     ).map(_.toPath.toString)
 
@@ -80,11 +82,11 @@ object Main {
           }
         }
       } catch {
-        case eSyntax: com.google.gson.JsonSyntaxException =>
+        case _: com.google.gson.JsonSyntaxException =>
           if (stopOnErrorFormat) {
             throw new RuntimeException("Not valid json, conf = " + conf)
           } else println("!!!Not valid json in " + conf)
-        case eNull: java.lang.NullPointerException =>
+        case _: java.lang.NullPointerException =>
           if (stopOnErrorFormat) {
             throw new RuntimeException("Not valid data in json, =" + conf)
           } else println("!!!Not valid data in json " + conf)
@@ -122,7 +124,7 @@ object Main {
          | --name $appName
          | $sparkParams
          | --class $classMain
-         | ${jarFile} $trParams""".stripMargin.replace("\n", " ")
+         | $jarFile $trParams""".stripMargin.replace("\n", " ")
 
     println(command)
 
