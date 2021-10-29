@@ -12,7 +12,7 @@ object Main {
 
     val help =
       """
-        |This program launches other programs, based on their configuration, western in sjon format
+        |This program launches other programs, based on their configuration, western in json format
         |====================================================================================
         |--help     - parameter for displaying this help
         |--confDir  - parameter pointing to the configuration directory
