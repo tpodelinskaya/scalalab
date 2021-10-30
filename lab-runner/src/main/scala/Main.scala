@@ -7,7 +7,16 @@ import scala.sys.exit
 object Main {
 
   def main(args: Array[String]): Unit = {
-    println("Hello! I'm Runner!")
+
+    def reactToAnError(stopProgram: Boolean = true)(error: => Boolean, msg: String): Unit = {
+      if (error) {
+        if (stopProgram) {
+          throw new RuntimeException(msg)
+        } else {
+          println(s"!!! $msg")
+        }
+      }
+    }
 
     val (confDirKey, sparkKey, stopOnErrorFormatKey, stopOnRunErrorKey) = ("confDir", "spark", "stopOnErrorFormat", "stopOnRunError")
 
@@ -22,74 +31,50 @@ object Main {
         |--stopOnRunError [true/false]    - stop the program if an error occurs as a result of startup
         |""".stripMargin
 
-    def getOption(list: List[String]): Map[String, String] = {
-      @tailrec
-      def nextOption(list: List[String], map: Map[String, String]): Map[String, String] = {
-        list match {
-          case Nil => map
-          case "--spark" :: value :: tail => nextOption(tail, Map(sparkKey -> value) ++ map)
-          case "--confDir" :: value :: tail => nextOption(tail, Map(confDirKey -> value) ++ map)
-          case "--stopOnErrorFormat" :: value :: tail => nextOption(tail, Map(stopOnErrorFormatKey -> value) ++ map)
-          case "--stopOnRunError" :: value :: tail => nextOption(tail, Map(stopOnRunErrorKey -> value) ++ map)
-          case "--help" :: _ => println(help); exit(0)
-          case _ => throw new RuntimeException("Not valid optional")
-        }
+    type MapOptional = Map[String, String]
+
+    @tailrec
+    def nextOption(list: List[String], map: MapOptional = Map()): MapOptional = {
+      list match {
+        case Nil => map
+        case "--spark" :: value :: tail => nextOption(tail, Map(sparkKey -> value) ++ map)
+        case "--confDir" :: value :: tail => nextOption(tail, Map(confDirKey -> value) ++ map)
+        case "--stopOnErrorFormat" :: value :: tail => nextOption(tail, Map(stopOnErrorFormatKey -> value) ++ map)
+        case "--stopOnRunError" :: value :: tail => nextOption(tail, Map(stopOnRunErrorKey -> value) ++ map)
+        case "--help" :: _ => println(help); exit(0)
+        case _ => throw new RuntimeException("Not valid optional")
       }
-      nextOption(list, Map())
     }
 
 
-
-    val mapOption = getOption(args.toList)
-
-    val stopOnErrorFormat: Boolean = mapOption.getOrElse(stopOnErrorFormatKey, true).toString.toBoolean
+    val mapOption = nextOption(args.toList)
+    val stopOnErrorFormat = mapOption.getOrElse(stopOnErrorFormatKey, true).toString.toBoolean
     val stopOnRunError = mapOption.getOrElse(stopOnRunErrorKey, true).toString.toBoolean
 
     if (mapOption.contains(sparkKey)) {
-      if (!new File(mapOption(sparkKey)).canExecute) {
-        throw new Exception("Not found spark-submit")
-      }
-    } else {
-      throw new RuntimeException("Key confDir not found")
+      reactToAnError()(!new File(mapOption(sparkKey)).canExecute, "Not found spark-submit")
     }
-
-    if (mapOption.contains(confDirKey)) {
-      if (!new File(mapOption(confDirKey)).isDirectory) {
-        throw new RuntimeException("Not found dir with configs")
-      }
-    }
-
+    reactToAnError()(!mapOption.contains(confDirKey), "Key confDir not found")
+    reactToAnError()(!new File(mapOption(confDirKey)).isDirectory, "Not found dir with configs")
 
     val sparkSubmit = mapOption.getOrElse(sparkKey, "spark-submit")
     val confDir = new File(mapOption(confDirKey)).listFiles(
-      (file: File) => file.exists() && file.getName.endsWith(".json")
+        (file: File) => file.exists() && file.getName.endsWith(".json")
     ).map(_.toPath.toString)
 
-
+    println("Hello! I'm Runner!")
+    println("Input args: " + mapOption.mkString("[", ", ", "]"))
     println("Input configs: " + confDir.mkString("[", ", ", "]"))
-
-
-
-
 
     confDir.foreach(conf => {
       try {
         val result = runJarOnConfig(sparkSubmit)(conf)
-        if (result != 0) {
-          println(s"Error while executing the program, $result conf = $conf")
-          if (stopOnRunError) {
-            throw new RuntimeException(s"error in run app $conf, result = $result")
-          }
-        }
+        reactToAnError(stopOnRunError)(result != 0, s"Error while executing the program, result = $result, conf = $conf")
       } catch {
         case _: com.google.gson.JsonSyntaxException =>
-          if (stopOnErrorFormat) {
-            throw new RuntimeException("Not valid json, conf = " + conf)
-          } else println("!!!Not valid json in " + conf)
+          reactToAnError(stopOnErrorFormat)(error = true, s"Not valid json, conf = $conf")
         case _: java.lang.NullPointerException =>
-          if (stopOnErrorFormat) {
-            throw new RuntimeException("Not valid data in json, =" + conf)
-          } else println("!!!Not valid data in json " + conf)
+          reactToAnError(stopOnErrorFormat)(error = true, s"Not valid data in json, conf = $conf")
       }
     }
     )
@@ -106,9 +91,9 @@ object Main {
 
     val confJson = new JsonParser().parse(new FileReader(pathToJar)).getAsJsonObject
 
-    val classMain: String = confJson.get("class").getAsString
+    val classMain = confJson.get("class").getAsString
     val appName = "\"" + confJson.get("app-name").getAsString + "\""
-    val jarFile: String = confJson.get("jar-file-path").getAsString
+    val jarFile = confJson.get("jar-file-path").getAsString
 
     val sparkParams = jsonParameterToString(
       confJson.getAsJsonObject("spark-params"),
@@ -126,7 +111,7 @@ object Main {
          | --class $classMain
          | $jarFile $trParams""".stripMargin.replace("\n", " ")
 
-    println(command)
+    println(s"CommandRun = $command")
 
     command.!
   }
