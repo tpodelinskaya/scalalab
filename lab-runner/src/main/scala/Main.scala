@@ -1,52 +1,10 @@
-import com.google.gson.{JsonObject, JsonParser}
+import com.google.gson.JsonParser
 
 import java.io.{File, FileReader}
-import scala.annotation.tailrec
-import scala.sys.exit
 
-object Main {
+object Main extends ArgsParser with JsonConvert {
 
   def main(args: Array[String]): Unit = {
-
-    def reactToAnError(stopProgram: Boolean = true)(error: => Boolean, msg: String): Unit = {
-      if (error) {
-        if (stopProgram) {
-          throw new RuntimeException(msg)
-        } else {
-          println(s"!!! $msg")
-        }
-      }
-    }
-
-    val (confDirKey, sparkKey, stopOnErrorFormatKey, stopOnRunErrorKey) = ("confDir", "spark", "stopOnErrorFormat", "stopOnRunError")
-
-    val help =
-      """
-        |This program launches other programs, based on their configuration, western in json format
-        |====================================================================================
-        |--help                           - parameter for displaying this help
-        |--confDir [path]                 - parameter pointing to the configuration directory
-        |--spark [path]                   - specifies the path to spark-submit, can be omitted
-        |--stopOnErrorFormat [true/false] - pause the program on erroneous input? Default true
-        |--stopOnRunError [true/false]    - stop the program if an error occurs as a result of startup
-        |""".stripMargin
-
-    type MapOptional = Map[String, String]
-
-    @tailrec
-    def nextOption(list: List[String], map: MapOptional = Map()): MapOptional = {
-      list match {
-        case Nil => map
-        case "--spark" :: value :: tail => nextOption(tail, Map(sparkKey -> value) ++ map)
-        case "--confDir" :: value :: tail => nextOption(tail, Map(confDirKey -> value) ++ map)
-        case "--stopOnErrorFormat" :: value :: tail => nextOption(tail, Map(stopOnErrorFormatKey -> value) ++ map)
-        case "--stopOnRunError" :: value :: tail => nextOption(tail, Map(stopOnRunErrorKey -> value) ++ map)
-        case "--help" :: _ => println(help); exit(0)
-        case _ => throw new RuntimeException("Not valid optional")
-      }
-    }
-
-
     val mapOption = nextOption(args.toList)
     val stopOnErrorFormat = mapOption.getOrElse(stopOnErrorFormatKey, true).toString.toBoolean
     val stopOnRunError = mapOption.getOrElse(stopOnRunErrorKey, true).toString.toBoolean
@@ -82,12 +40,6 @@ object Main {
 
   def runJarOnConfig(sparkSubmit: String)(pathToJar: String): Int = {
     import scala.sys.process._
-
-    def jsonParameterToString(jsonParameters: JsonObject, parameterFormat: (String, String) => String): String = {
-      jsonParameters.keySet().toArray.map(x => {
-        parameterFormat(x.toString, jsonParameters.get(x.toString).getAsString)
-      }).mkString(" ")
-    }
 
     val confJson = new JsonParser().parse(new FileReader(pathToJar)).getAsJsonObject
 

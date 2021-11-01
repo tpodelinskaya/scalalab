@@ -11,7 +11,7 @@ lazy val scalaLab =
     .settings(name := "scalalab")
     .aggregate(labRunner, labTR01, labTR03)
 
-val labRunnerMain = Some("example.com.scalalab.lab-runner.Main")
+val labRunnerMain = Some("Main")
 
 lazy val labRunner =
   (project in file("./lab-runner"))
@@ -25,7 +25,7 @@ lazy val labRunner =
       )
     )
 
-val labTR01Main = Some("example.com.scalalab.lab-tr01.Main")
+val labTR01Main = Some("Main")
 
 lazy val labTR01 =
   (project in file("./lab-tr01"))
@@ -39,7 +39,7 @@ lazy val labTR01 =
       )
     )
 
-val labTR03Main = Some("example.com.scalalab.lab-tr03.Main")
+val labTR03Main = Some("Main")
 
 lazy val labTR03 =
   (project in file("./lab-tr03"))
