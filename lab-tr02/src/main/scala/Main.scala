@@ -34,7 +34,8 @@ object Main {
     val columns = Seq("Tag", "Count")
 
     val df = counts.toDF(columns: _*)
-    //df.coalesce(1).write.option("header", true).mode("append").csv("file:///C:/Users/Валерик/Downloads/htmls")
+
+    df.coalesce(1).write.option("header", true).mode("append").csv("file:///C:/Users/Валерик/Downloads/htmls")
 
     df.show()
     df.printSchema()
