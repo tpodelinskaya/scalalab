@@ -23,7 +23,7 @@ object Main {
       } catch {
         case _: com.google.gson.JsonSyntaxException =>
           reactToAnError(argsParser.stopOnErrorFormat, msg = s"Not valid json, conf = $conf")
-        case _: java.lang.NullPointerException =>
+        case _: ExceptionParseJson =>
           reactToAnError(argsParser.stopOnErrorFormat, msg = s"Not valid data in json, conf = $conf")
       }
     }

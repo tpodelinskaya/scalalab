@@ -83,15 +83,15 @@ class JsonConvertSpec extends AnyFlatSpec with should.Matchers {
     command should be("spark-submit  --name \"ArrayTest\"  --executor-cores 1 --arrayParameter element1 element2 element3  --class Main  lab_tr03.jar ")
   }
 
-  it should "return error" in {
-    intercept[NullPointerException] {
-      println("NullPointerException")
+  it should "return error (not set data)" in {
+    intercept[ExceptionParseJson] {
       createCommand(jsonNotDataSetClass)
-    }
-    intercept[UnsupportedOperationException] {
-      println("UnsupportedOperationException")
-      createCommand(jsonNotValidData)
     }
   }
 
+  it should "return error (not valid type)" in {
+    intercept[ExceptionParseJson] {
+      createCommand(jsonNotValidData)
+    }
+  }
 }
