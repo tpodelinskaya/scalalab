@@ -1,5 +1,8 @@
 import ArgsParser.reactToAnError
 import JsonConvert.createCommand
+import com.google.gson.JsonParser
+
+import java.io.FileReader
 
 object Main {
 
@@ -12,7 +15,8 @@ object Main {
 
     argsParser.confDir.foreach(conf => {
       try {
-        val commandRun = createCommand(argsParser.sparkSubmit)(conf)
+        val confJson = JsonParser.parseReader(new FileReader(conf)).getAsJsonObject
+        val commandRun = createCommand(argsParser.sparkSubmit)(confJson)
         println(s"CommandRun = $commandRun")
         val result = runCommand(commandRun)
         reactToAnError(argsParser.stopOnRunError, result != 0, s"Error while executing the program, result = $result, conf = $conf")
