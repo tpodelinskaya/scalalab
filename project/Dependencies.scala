@@ -3,6 +3,7 @@ import sbt._
 object Dependencies {
 
   val scalaCompat: String = "2.12.12"
+  val scalaTestVersion = "3.2.10"
 
   private object Version {
     val spark              = "2.4.8"
@@ -18,7 +19,9 @@ object Dependencies {
   }
 
   object Other {
-    val gson = "com.google.code.gson" % "gson" % "2.8.2"
+    val gson = "com.google.code.gson" % "gson" % "2.8.8"
+    val scalaTest = "org.scalatest" %% "scalatest" % scalaTestVersion % Test
+
   }
 
 }

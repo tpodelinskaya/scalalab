@@ -21,7 +21,8 @@ lazy val labRunner =
       mainClass in assembly := labRunnerMain,
       assemblyJarName in assembly := s"lab-runner-assembly.jar",
       libraryDependencies ++= Seq(
-        Other.gson
+        Other.gson,
+        Other.scalaTest
       )
     )
 
