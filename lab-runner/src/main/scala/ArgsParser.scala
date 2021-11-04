@@ -1,62 +1,96 @@
-import ArgsParser._
+
+import org.apache.commons.cli._
 
 import java.io.File
-import scala.annotation.tailrec
 import scala.sys.exit
 
-object ArgsParser {
-  type MapOptional = Map[String, String]
-  private val (confDirKey, sparkKey, stopOnErrorFormatKey, stopOnRunErrorKey) = ("confDir", "spark", "stopOnErrorFormat", "stopOnRunError")
-  private val formatFile = ".json"
-  private val help =
-    """
-      |This program launches other programs, based on their configuration, western in json format
-      |====================================================================================
-      |--help                           - parameter for displaying this help
-      |--confDir [path]                 - parameter pointing to the configuration directory
-      |--spark [path]                   - specifies the path to spark-submit, can be omitted
-      |--stopOnErrorFormat [true/false] - pause the program on erroneous input? Default true
-      |--stopOnRunError [true/false]    - stop the program if an error occurs as a result of startup
-      |""".stripMargin
+class ArgsParser(args: Array[String]) {
+  validation()
 
-  def reactToAnError(stopProgram: Boolean = true, error: => Boolean = true, msg: String): Unit = {
+  def confDir(): String = confDir
+
+  def spark(): String = spark
+
+  val reactToAnErrorFormat: (=> Boolean, String) => Unit = reactToAnError(stopOnErrorFormat) _
+
+  val reactToAnErrorRunProgram: (=> Boolean, String) => Unit = reactToAnError(stopOnRunError) _
+
+  private[this] var confDir: String = _
+  private[this] var stopOnErrorFormat: Boolean = false
+  private[this] var stopOnRunError: Boolean = false
+  private[this] var spark: String = _
+
+
+  private[this] def reactToAnError(stopProgram: Boolean)(error: => Boolean = true, msg: String): Unit = {
     if (error) {
       if (stopProgram) {
         throw new RuntimeException(msg)
       } else {
-        println(s"!!! $msg")
+        println(" ! ! ! " * 5)
+        println(s" ! ! ! $msg")
+        println(" ! ! ! " * 5)
       }
     }
   }
-}
 
-class ArgsParser(args: Array[String]) {
+  private[this] def validation(): Unit = {
+    val options = new Options()
 
-  val mapOption = nextOption(args.toList)
-  val sparkSubmit = mapOption.getOrElse(sparkKey, "spark-submit")
-  val stopOnErrorFormat = mapOption.getOrElse(stopOnErrorFormatKey, true).toString.toBoolean
-  val stopOnRunError = mapOption.getOrElse(stopOnRunErrorKey, true).toString.toBoolean
+    val help = new Option("h", "help", false, "parameter for displaying this help")
+    val confDir = new Option("cdir", "confDir", true, "parameter pointing to the configuration directory")
+    val spark = new Option("s", "spark", true, "specifies the path to spark-submit, can be omitted")
+    val stopOnErrorFormat = new Option("sr", "stopOnErrorFormat", false, "set this key if you want to throw an exception in case of data errors")
+    val stopOnRunError = new Option("sre", "stopOnRunError", false, "set this key if you want to throw an exception during incorrect execution of the transformation")
 
-  if (mapOption.contains(sparkKey)) {
-    reactToAnError(error = !new File(mapOption(sparkKey)).canExecute, msg = "Not found spark-submit")
-  }
-  reactToAnError(error = !mapOption.contains(confDirKey), msg = "Key confDir not found")
-  reactToAnError(error = !new File(mapOption(confDirKey)).isDirectory, msg = "Not found dir with configs")
 
-  val confDir = new File(mapOption(confDirKey)).listFiles(
-    (file: File) => file.exists() && file.getName.endsWith(formatFile)
-  ).map(_.toPath.toString)
+    confDir.setRequired(true)
+    confDir.setArgName("path")
+    spark.setArgName("path to spark-submit")
 
-  @tailrec
-  private final def nextOption(list: List[String], map: MapOptional = Map()): MapOptional = {
-    list match {
-      case Nil => map
-      case "--spark" :: value :: tail => nextOption(tail, Map(sparkKey -> value) ++ map)
-      case "--confDir" :: value :: tail => nextOption(tail, Map(confDirKey -> value) ++ map)
-      case "--stopOnErrorFormat" :: value :: tail => nextOption(tail, Map(stopOnErrorFormatKey -> value) ++ map)
-      case "--stopOnRunError" :: value :: tail => nextOption(tail, Map(stopOnRunErrorKey -> value) ++ map)
-      case "--help" :: _ => println(help); exit(0)
-      case _ => throw new RuntimeException("Not valid optional")
+    options.addOption(help)
+      .addOption(confDir)
+      .addOption(spark)
+      .addOption(stopOnRunError)
+      .addOption(stopOnErrorFormat)
+
+
+    val parser = new DefaultParser()
+
+    def helpPrint() = {
+      val formatter = new HelpFormatter()
+      println("This program launches other programs, based on their configuration, western in json format")
+      println("==========================================================================================")
+      formatter.printHelp("Lab-runner", options)
+      exit(0)
+    }
+
+    try {
+      parser.parse(options, args)
+      val cmd = parser.parse(options, args)
+
+      if (cmd.hasOption(help)) {
+        helpPrint()
+      }
+
+      this.confDir = cmd.getOptionValue(confDir)
+      this.spark = if (cmd.hasOption(spark)) {
+        reactToAnError(true)(!new File(cmd.getOptionValue(spark)).canExecute, "Not found spark-submit")
+        cmd.getOptionValue(spark)
+      } else {
+        "spark-submit"
+      }
+      this.stopOnRunError = cmd.hasOption(stopOnRunError)
+      this.stopOnErrorFormat = cmd.hasOption(stopOnErrorFormat)
+
+      reactToAnError(true)(!new File(this.confDir).isDirectory, this.confDir + " is not directory")
+    }
+    catch {
+      case e: Exception =>
+        e.printStackTrace()
+        helpPrint()
     }
   }
+
+
 }
+
