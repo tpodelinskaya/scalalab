@@ -5,7 +5,7 @@ import scala.util.matching.Regex
 object Main {
   def main(args: Array[String]): Unit = {
     println("Hello, I'm TR03!")
-      
+
     val keyValPattern: Regex = "^([\\w]+)=([\\w=*./: ]+)$".r
     val map = args.map(arg => {
           val keyVal = keyValPattern.findPrefixMatchOf(arg).getOrElse(throw new RuntimeException("not valid arg"))
@@ -33,7 +33,7 @@ object Main {
     import spark.sqlContext.implicits._
 
     val columns = Seq("filename", "content")
-    val filesRead = spark.sparkContext.wholeTextFiles(inpath + "/" + mask)
+    val filesRead = spark.sparkContext.wholeTextFiles(inpath + s"${System.getProperty("file.separator")}" + mask)
     val df = filesRead.toDF(columns: _*)
     df.coalesce(1).write.mode("overwrite").option("compression", "snappy").parquet(outpath)
 
