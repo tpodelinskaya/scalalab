@@ -6,7 +6,7 @@ object Main {
   def main(args: Array[String]): Unit = {
     println("Hello, I'm TR03!")
 
-    val keyValPattern: Regex = "^([\\w]+)=([\\w=*./: ]+)$".r
+    val keyValPattern: Regex = "^([\\w]+)=(.+)$".r
     val map = args.map(arg => {
           val keyVal = keyValPattern.findPrefixMatchOf(arg).getOrElse(throw new RuntimeException("not valid arg"))
           (keyVal.group(1), keyVal.group(2))
