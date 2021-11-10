@@ -4,12 +4,19 @@ import org.scalatest.matchers.should
 import scala.sys.exit
 
 class ArgsParserSpec extends AnyFlatSpec with should.Matchers {
+  def isDirMock(argsParser: ArgsParser)(path: String): Boolean = {
+    argsParser.confDir() == path
+  }
+
+  def isExecuteSparkMock(path: String): Boolean = {
+    path.contains("spark-submit")
+  }
 
   implicit def arrayParser(array: Array[String]): ArgsParser = new ArgsParser(array)
 
-  val argsStopError: ArgsParser = Array("-cdir", "/home/confDir", "-sr", "-src")
+  val argsStopError: ArgsParser = Array("-cdir", "/home/confDir", "-sf", "-sae")
   val argsNotStopError: ArgsParser = Array("-cdir", "/home/confDir2")
-  val argsStopRunError: ArgsParser = Array("-cdir", "\\home\\co_nf=Dir3", "--stopOnRunError")
+  val argsStopRunError: ArgsParser = Array("--confDir", "\\home\\co_nf=Dir3", "--stopOnRunError")
 
   val argsHelp: ArgsParser = Array("--help")
 
@@ -17,19 +24,61 @@ class ArgsParserSpec extends AnyFlatSpec with should.Matchers {
   val argsErrorNotValid: ArgsParser = Array("-cdir", "-sr")
 
   "Args parser" should "accept parameters stop on error" in {
-    var msgCheck: String = ""
+    argsStopError.validation(isDirMock(argsStopError) _, isExecuteSparkMock, exit(_), (_) => {})
+    argsStopRunError.validation(isDirMock(argsStopRunError), isExecuteSparkMock, exit(_), (_) => {})
+
+    argsStopError.confDir() should be("/home/confDir")
+
+    argsStopError.spark() should be("spark-submit")
+
+    val msgError = "1 != 2"
+    intercept[java.lang.RuntimeException] {
+      argsStopError.reactToAnErrorFormatVar(1 != 2, msgError)
+    }
+    intercept[java.lang.RuntimeException] {
+      argsStopError.reactToAnErrorRunProgram(1 != 2, msgError)
+    }
+
+    intercept[java.lang.RuntimeException] {
+      argsStopRunError.reactToAnErrorRunProgram(1 != 2, msgError)
+    }
+  }
+
+  it should "print error" in {
+    var out: String = ""
+
     def printMock(msg: String) = {
-      msgCheck = msg
+      out = msg
       println(msg)
     }
 
-    argsStopError.validation((_) => true, (_) => true, exit(_), printMock(_))
+    argsNotStopError.validation(isDirMock(argsNotStopError) _, isExecuteSparkMock, exit(_), printMock)
+    val msgError = "1 != 2 (run)"
+    argsNotStopError.reactToAnErrorRunProgram(1 != 2, msgError)
+    out.contains(msgError) should be(true)
 
-/*    val msgError = "1 == 2"
-    intercept[RuntimeException] {
-      argsStopError.reactToAnErrorFormatVar(true, msgError)
-//      argsStopError.reactToAnErrorFormat(1 == 2, msgError)
-    }
-    msgCheck.contains(msgError) should be (true)*/
+    val msgErrorFormat = "1 != 2f"
+    argsNotStopError.reactToAnErrorFormat(1 != "2f", msgErrorFormat)
+    out.contains(msgErrorFormat) should be(true)
+  }
+
+  it should "help print" in {
+    argsHelp.validation((_) => false, (_) => false, (i) => {
+      i should be(0);
+      Unit
+    }, println(_))
+  }
+
+  it should "throw exception" in {
+    argsErrorNoneDir.validation(isDirMock(argsErrorNoneDir) _, isExecuteSparkMock, (i) => {
+      i should be(0);
+      Unit
+    }, println(_))
+
+    argsErrorNotValid.validation(isDirMock(argsErrorNotValid) _, isExecuteSparkMock, (i) => {
+      i should be(0);
+      Unit
+    }, println(_))
+
   }
 }
