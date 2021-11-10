@@ -26,7 +26,7 @@ class ArgsParser(args: Array[String]) {
       if (stopProgram) {
         throw new RuntimeException(msg)
       } else {
-        print(" ! ! !" * 5 + s"\n ! ! ! $msg" + "\n ! ! !" * 5)
+        print(" ! ! !" * 5 + s"\n ! ! ! $msg\n" + " ! ! !" * 5)
       }
     }
   }
@@ -41,15 +41,15 @@ class ArgsParser(args: Array[String]) {
    */
   def validation(isDir: String => Boolean,
                  isExecuteFile: String => Boolean,
-                 exitFun: Int => Nothing,
+                 exitFun: Int => Unit,
                  print: String => Unit): Unit = {
 
 
     val help = new Option("h", "help", false, "parameter for displaying this help")
     val confDir = new Option("cdir", "confDir", true, "parameter pointing to the configuration directory")
-    val spark = new Option("s", "spark", true, "specifies the path to spark-submit, can be omitted")
-    val stopOnErrorFormat = new Option("sr", "stopOnErrorFormat", false, "set this key if you want to throw an exception in case of data errors")
-    val stopOnRunError = new Option("sre", "stopOnRunError", false, "set this key if you want to throw an exception during incorrect execution of the transformation")
+    val spark = new Option("sp", "spark", true, "specifies the path to spark-submit, can be omitted")
+    val stopOnErrorFormat = new Option("sf", "stopOnErrorFormat", false, "set this key if you want to throw an exception in case of data errors")
+    val stopOnRunError = new Option("sae", "stopOnRunError", false, "set this key if you want to throw an exception during incorrect execution of the transformation")
 
 
     confDir.setRequired(true)
@@ -59,9 +59,9 @@ class ArgsParser(args: Array[String]) {
     val options = new Options()
       .addOption(help)
       .addOption(confDir)
-      .addOption(spark)
       .addOption(stopOnRunError)
       .addOption(stopOnErrorFormat)
+      .addOption(spark)
 
 
     val parser = new DefaultParser()
@@ -86,7 +86,7 @@ class ArgsParser(args: Array[String]) {
 
       this.spark = if (cmd.hasOption(spark)) {
         if (!isExecuteFile(cmd.getOptionValue(spark))) {
-          throw new RuntimeException("Not found spark-submit")
+          throw new RuntimeException(s"Not found spark-submit, path = ${cmd.getOptionValue(spark)} not valid")
         }
         cmd.getOptionValue(spark)
       } else {

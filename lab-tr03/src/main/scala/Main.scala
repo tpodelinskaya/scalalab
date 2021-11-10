@@ -33,7 +33,6 @@ object Main {
   }
 
   def fileTransformation(inpath: String, mask: String, outpath: String): Unit = {
-    import spark.sqlContext.implicits._
 
     val spark = SparkSession
     .builder()
@@ -41,7 +40,9 @@ object Main {
     .config("spark.master", "local")
     .getOrCreate()
 
-    val filesRead = spark.sparkContext.wholeTextFiles(s"$inpath ${System.getProperty("file.separator")} $mask")
+    import spark.sqlContext.implicits._
+
+    val filesRead = spark.sparkContext.wholeTextFiles(s"$inpath${System.getProperty("file.separator")}$mask")
     val columns = Seq("filename", "content")
     val filesDF = filesRead.toDF(columns: _*)
     filesDF.coalesce(1).write.mode("overwrite").option("compression", "snappy").parquet(outpath)

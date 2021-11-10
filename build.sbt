@@ -52,7 +52,8 @@ lazy val labTR03 =
       assemblyJarName in assembly := s"lab-tr03-assembly.jar",
       libraryDependencies ++= Seq(
         Spark.Core,
-        Spark.Sql
+        Spark.Sql,
+        Other.scalaTest
       )
     )
 
