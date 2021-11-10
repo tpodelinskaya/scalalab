@@ -2,12 +2,14 @@ import JsonConvert.createCommand
 import com.google.gson.JsonParser
 
 import java.io.{File, FileReader}
+import scala.sys.exit
 
 object Main {
   def main(args: Array[String]): Unit = {
     val formatFile = ".json"
 
     val pArgs = new ArgsParser(args)
+    pArgs.validation(new File(_).isDirectory, new File(_).canExecute, exit(_), println(_))
 
     val configs = new File(pArgs.confDir).listFiles(
       (file: File) => file.exists() && file.getName.endsWith(formatFile)

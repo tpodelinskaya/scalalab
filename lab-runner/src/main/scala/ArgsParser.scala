@@ -1,19 +1,19 @@
 
 import org.apache.commons.cli._
 
-import java.io.File
-import scala.sys.exit
 
 class ArgsParser(args: Array[String]) {
-  validation()
 
   def confDir(): String = confDir
 
   def spark(): String = spark
 
-  val reactToAnErrorFormat: (=> Boolean, String) => Unit = reactToAnError(stopOnErrorFormat) _
+  def reactToAnErrorFormat(fun: => Boolean, msg: String): Unit = this.reactToAnErrorFormatVar(fun, msg)
+  def reactToAnErrorRunProgram(fun: => Boolean, msg: String): Unit = this.reactToAnErrorRunProgramVar(fun, msg)
 
-  val reactToAnErrorRunProgram: (=> Boolean, String) => Unit = reactToAnError(stopOnRunError) _
+  var reactToAnErrorFormatVar: (=> Boolean, String) => Unit = _
+  private[this] var reactToAnErrorRunProgramVar: (=> Boolean, String) => Unit = _
+
 
   private[this] var confDir: String = _
   private[this] var stopOnErrorFormat: Boolean = false
@@ -21,19 +21,29 @@ class ArgsParser(args: Array[String]) {
   private[this] var spark: String = _
 
 
-  private[this] def reactToAnError(stopProgram: Boolean)(error: => Boolean = true, msg: String): Unit = {
+  private[this] def reactToAnError(stopProgram: Boolean, print: String => Unit)(error: => Boolean = true, msg: String): Unit = {
     if (error) {
       if (stopProgram) {
         throw new RuntimeException(msg)
       } else {
-        println(" ! ! ! " * 5)
-        println(s" ! ! ! $msg")
-        println(" ! ! ! " * 5)
+        print(" ! ! !" * 5 + s"\n ! ! ! $msg" + "\n ! ! !" * 5)
       }
     }
   }
 
-  private[this] def validation(): Unit = {
+  /**
+   * Methods checks the data passed to the constructor
+   * Accepts higher-order functions as input
+   * @param isDir path is directory
+   * @param isExecuteFile path is execute file in OS
+   * @param exitFun program termination function
+   * @param print function for outputting data to the outside world
+   */
+  def validation(isDir: String => Boolean,
+                 isExecuteFile: String => Boolean,
+                 exitFun: Int => Nothing,
+                 print: String => Unit): Unit = {
+
 
     val help = new Option("h", "help", false, "parameter for displaying this help")
     val confDir = new Option("cdir", "confDir", true, "parameter pointing to the configuration directory")
@@ -58,10 +68,10 @@ class ArgsParser(args: Array[String]) {
 
     def helpPrint() = {
       val formatter = new HelpFormatter()
-      println("This program launches other programs, based on their configuration, western in json format")
-      println("==========================================================================================")
+      print("This program launches other programs, based on their configuration, western in json format")
+      print("==========================================================================================")
       formatter.printHelp("Lab-runner", options)
-      exit(0)
+      exitFun(0)
     }
 
     try {
@@ -69,12 +79,13 @@ class ArgsParser(args: Array[String]) {
 
       if (cmd.hasOption(help)) {
         helpPrint()
+        return
       }
 
       this.confDir = cmd.getOptionValue(confDir)
 
       this.spark = if (cmd.hasOption(spark)) {
-        if (!new File(cmd.getOptionValue(spark)).canExecute) {
+        if (!isExecuteFile(cmd.getOptionValue(spark))) {
           throw new RuntimeException("Not found spark-submit")
         }
         cmd.getOptionValue(spark)
@@ -86,9 +97,12 @@ class ArgsParser(args: Array[String]) {
 
       this.stopOnErrorFormat = cmd.hasOption(stopOnErrorFormat)
 
-      if (!new File(this.confDir).isDirectory) {
+      if (!isDir(this.confDir())) {
         throw new RuntimeException(this.confDir + " is not directory")
       }
+
+      reactToAnErrorFormatVar = reactToAnError(this.stopOnErrorFormat, print) _
+      reactToAnErrorRunProgramVar = reactToAnError(this.stopOnRunError, print) _
     }
     catch {
       case e: Exception =>
