@@ -34,7 +34,6 @@ class ArgsParser(args: Array[String]) {
   }
 
   private[this] def validation(): Unit = {
-    val options = new Options()
 
     val help = new Option("h", "help", false, "parameter for displaying this help")
     val confDir = new Option("cdir", "confDir", true, "parameter pointing to the configuration directory")
@@ -47,7 +46,8 @@ class ArgsParser(args: Array[String]) {
     confDir.setArgName("path")
     spark.setArgName("path to spark-submit")
 
-    options.addOption(help)
+    val options = new Options()
+      .addOption(help)
       .addOption(confDir)
       .addOption(spark)
       .addOption(stopOnRunError)
@@ -65,7 +65,6 @@ class ArgsParser(args: Array[String]) {
     }
 
     try {
-      parser.parse(options, args)
       val cmd = parser.parse(options, args)
 
       if (cmd.hasOption(help)) {
@@ -73,16 +72,23 @@ class ArgsParser(args: Array[String]) {
       }
 
       this.confDir = cmd.getOptionValue(confDir)
+
       this.spark = if (cmd.hasOption(spark)) {
-        reactToAnError(true)(!new File(cmd.getOptionValue(spark)).canExecute, "Not found spark-submit")
+        if (!new File(cmd.getOptionValue(spark)).canExecute) {
+          throw new RuntimeException("Not found spark-submit")
+        }
         cmd.getOptionValue(spark)
       } else {
         "spark-submit"
       }
+
       this.stopOnRunError = cmd.hasOption(stopOnRunError)
+
       this.stopOnErrorFormat = cmd.hasOption(stopOnErrorFormat)
 
-      reactToAnError(true)(!new File(this.confDir).isDirectory, this.confDir + " is not directory")
+      if (!new File(this.confDir).isDirectory) {
+        throw new RuntimeException(this.confDir + " is not directory")
+      }
     }
     catch {
       case e: Exception =>
