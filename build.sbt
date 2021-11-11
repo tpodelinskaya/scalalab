@@ -36,7 +36,7 @@ lazy val labTR01 =
       )
     )
 
-val labTR02Main = Some("example.com.scalalab.lab-tr02.Main")
+val labTR02Main = Some("Main")
 
 lazy val labTR02 =
   (project in file("./lab-tr02"))
