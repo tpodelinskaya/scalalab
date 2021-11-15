@@ -11,9 +11,11 @@ object Dependencies {
 
   object Spark {
 
-    val Core =  "org.apache.spark" %% "spark-core" % Version.spark % "provided"
-    val Sql = "org.apache.spark" %% "spark-sql" % Version.sparkSQL % "provided"
+    val Core =  "org.apache.spark" %% "spark-core" % Version.spark 
+    val SQL  = "org.apache.spark" %% "spark-sql" %  Version.spark 
+  }
 
-
+  object Postgres {
+    val driver = "org.postgresql" % "postgresql" % "42.2.24"
   }
 }
