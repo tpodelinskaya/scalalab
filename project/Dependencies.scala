@@ -6,15 +6,14 @@ object Dependencies {
   val scalaTestVersion = "3.2.10"
 
   private object Version {
-    val spark = "2.4.8"
-    val sparkSql = "2.4.8"
-
+    val spark              = "2.4.8"
+    val sparkSQL           = "2.4.8"
   }
 
   object Spark {
 
-    val Core = "org.apache.spark" %% "spark-core" % Version.spark % "provided"
-    val Sql = "org.apache.spark" %% "spark-sql" % Version.sparkSql % "provided"
+   val Core =  "org.apache.spark" %% "spark-core" % Version.spark 
+   val SQL  = "org.apache.spark" %% "spark-sql" %  Version.spark 
 
   }
 
@@ -24,4 +23,7 @@ object Dependencies {
     val commonsCli = "commons-cli" % "commons-cli" % "1.5.0"
   }
 
+  object Postgres {
+    val driver = "org.postgresql" % "postgresql" % "42.2.24"
+  }
 }
