@@ -1,5 +1,7 @@
 import org.apache.spark.sql.SparkSession
 
+import scala.io.Source
+
 import scala.util.matching.Regex
 
 
@@ -35,19 +37,18 @@ object Main {
 
     val readFile = sc.textFile(inpath)
 
-    val words = readFile
-      .flatMap(lines => lines.split("\\s.*?\\s"))
-      .filter(word => word.matches("\\<.*?\\>"))
+    val keyValP: Regex = "<[^>]*>".r
 
-    val counts = words
-      .map(w => (w, 1))
+    val tags = readFile
+      .flatMap(lines => keyValP.findAllIn(lines))
+      .map(items => (items, 1))
       .reduceByKey(_ + _)
 
-    val columns = Seq("Tag", "Count")
+    val columns = Seq("{Tag}", "{Count}")
 
-    val df = counts.toDF(columns: _*)
+    val df = tags.toDF(columns: _*)
 
-    df.coalesce(1).write.option("header", true).mode("append").csv(outpath)
+    df.coalesce(1).write.option("header", true).mode("overwrite").csv(outpath)
 
     df.show()
     df.printSchema()
