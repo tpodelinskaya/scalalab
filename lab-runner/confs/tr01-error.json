@@ -1,6 +1,6 @@
 {
   "jar-file-path" : "lab-tr01/target/scala-2.12/labtr01_2.12-0.1.0.jar",
-  "class" : "Main",
+  "class" : "MainError",
   "app-name" : "LoadTr01App",
   "spark-params" : {
     "executor-cores" : "1",
