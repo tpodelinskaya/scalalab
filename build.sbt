@@ -9,7 +9,7 @@ lazy val scalaLab =
   Project(id = "scalalab", base = file("."))
     .disablePlugins(AssemblyPlugin)
     .settings(name := "scalalab")
-    .aggregate(labRunner, labTR01)
+    .aggregate(labRunner, labTR01, labTR02)
 
 val labRunnerMain = Some("example.com.scalalab.lab-runner.Main")
 
@@ -37,6 +37,21 @@ lazy val labTR01 =
         Postgres.driver
       )
     )
+val labTR02Main = Some("Main")
+
+lazy val labTR02 =
+  (project in file("./lab-tr02"))
+    .enablePlugins(AssemblyPlugin)
+    .settings(
+      mainClass in (Compile, run) := labTR02Main,
+      mainClass in assembly := labTR02Main,
+      assemblyJarName in assembly := s"lab-tr02-assembly.jar",
+      libraryDependencies ++= Seq(
+        Spark.Core,
+        Spark.Sql
+      )
+    )
+
 ThisBuild / assemblyMergeStrategy := {
   case PathList("org",xs @ _*)         => MergeStrategy.first
   case PathList("javax",xs @ _*)         => MergeStrategy.first
