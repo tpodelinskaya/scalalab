@@ -12,6 +12,8 @@ object Main {
 
     println(s"Input data: $argsMap")
 
+    //Где обработка выплюнутых эксепшенов для пользователя?
+
     val inpath = getArg(argsMap, "inpath")
     val mask = getArg(argsMap, "mask")
     val outpath = getArg(argsMap, "outpath")
@@ -34,6 +36,10 @@ object Main {
 
   def fileTransformation(inpath: String, mask: String, outpath: String): Unit = {
 
+    //Как запускается spark - локально или на сервере тоже вынести в настройки
+    //Наименование приложения вынести в настройки
+    //И то и то будет в конфигурационном файле json, а значит, может быть подставленно раннером
+    //И уже забрано трансформацией внутри себя
     val spark = SparkSession
     .builder()
     .appName("Java Spark SQL TR03")
