@@ -1,6 +1,7 @@
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
 
+import scala.language.implicitConversions
 import scala.sys.exit
 
 class ArgsParserSpec extends AnyFlatSpec with should.Matchers {
@@ -12,7 +13,11 @@ class ArgsParserSpec extends AnyFlatSpec with should.Matchers {
     path.contains("spark-submit")
   }
 
-  implicit def arrayParser(array: Array[String]): ArgsParser = new ArgsParser(array)
+  implicit def arrayParser(array: Array[String]): ArgsParser = new ArgsParser() {
+    override def args(): Array[String] = {
+      array
+    }
+  }
 
   val argsStopError: ArgsParser = Array("-cdir", "/home/confDir", "-sf", "-sae")
   val argsNotStopError: ArgsParser = Array("-cdir", "/home/confDir2")
@@ -24,8 +29,8 @@ class ArgsParserSpec extends AnyFlatSpec with should.Matchers {
   val argsErrorNotValid: ArgsParser = Array("-cdir", "-sr")
 
   "Args parser" should "accept parameters stop on error" in {
-    argsStopError.validation(isDirMock(argsStopError) _, isExecuteSparkMock, exit(_), (_) => {})
-    argsStopRunError.validation(isDirMock(argsStopRunError), isExecuteSparkMock, exit(_), (_) => {})
+    argsStopError.validation(isDirMock(argsStopError), isExecuteSparkMock, exit(_), _ => {})
+    argsStopRunError.validation(isDirMock(argsStopRunError), isExecuteSparkMock, exit(_), _ => {})
 
     argsStopError.confDir() should be("/home/confDir")
 
@@ -33,7 +38,7 @@ class ArgsParserSpec extends AnyFlatSpec with should.Matchers {
 
     val msgError = "1 != 2"
     intercept[java.lang.RuntimeException] {
-      argsStopError.reactToAnErrorFormatVar(1 != 2, msgError)
+      argsStopError.reactToAnErrorFormat(1 != 2, msgError)
     }
     intercept[java.lang.RuntimeException] {
       argsStopError.reactToAnErrorRunProgram(1 != 2, msgError)
@@ -52,7 +57,8 @@ class ArgsParserSpec extends AnyFlatSpec with should.Matchers {
       println(msg)
     }
 
-    argsNotStopError.validation(isDirMock(argsNotStopError) _, isExecuteSparkMock, exit(_), printMock)
+    argsNotStopError.validation(isDirMock(argsNotStopError), isExecuteSparkMock, exit(_), printMock)
+
     val msgError = "1 != 2 (run)"
     argsNotStopError.reactToAnErrorRunProgram(1 != 2, msgError)
     out.contains(msgError) should be(true)
@@ -63,19 +69,19 @@ class ArgsParserSpec extends AnyFlatSpec with should.Matchers {
   }
 
   it should "help print" in {
-    argsHelp.validation((_) => false, (_) => false, (i) => {
-      i should be(0);
+    argsHelp.validation(_ => false, _ => false, i => {
+      i should be(0)
       Unit
     }, println(_))
   }
 
   it should "throw exception" in {
-    argsErrorNoneDir.validation(isDirMock(argsErrorNoneDir) _, isExecuteSparkMock, (i) => {
-      i should be(0);
+    argsErrorNoneDir.validation(isDirMock(argsErrorNoneDir), isExecuteSparkMock, i => {
+      i should be(0)
       Unit
     }, println(_))
 
-    argsErrorNotValid.validation(isDirMock(argsErrorNotValid) _, isExecuteSparkMock, (i) => {
+    argsErrorNotValid.validation(isDirMock(argsErrorNotValid), isExecuteSparkMock, i => {
       i should be(0);
       Unit
     }, println(_))
