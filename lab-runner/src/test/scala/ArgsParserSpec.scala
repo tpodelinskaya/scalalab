@@ -14,7 +14,9 @@ class ArgsParserSpec extends AnyFlatSpec with should.Matchers {
   }
 
   implicit def arrayParser(array: Array[String]): ArgsParser = new ArgsParser() {
-
+    override def args(): Array[String] = {
+      array
+    }
   }
 
   val argsStopError: ArgsParser = Array("-cdir", "/home/confDir", "-sf", "-sae")
@@ -56,6 +58,7 @@ class ArgsParserSpec extends AnyFlatSpec with should.Matchers {
     }
 
     argsNotStopError.validation(isDirMock(argsNotStopError), isExecuteSparkMock, exit(_), printMock)
+
     val msgError = "1 != 2 (run)"
     argsNotStopError.reactToAnErrorRunProgram(1 != 2, msgError)
     out.contains(msgError) should be(true)

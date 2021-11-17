@@ -15,6 +15,7 @@ trait ArgsParser extends App {
   def reactToAnErrorRunProgram(fun: => Boolean, msg: String): Unit = reactToAnError(this.stopOnRunError, print)(fun, msg)
 
 
+  private[this] var print: String => Unit = _
 
   private[this] var stopOnErrorFormat: Boolean = false
 
@@ -44,7 +45,7 @@ trait ArgsParser extends App {
                  isExecuteFile: String => Boolean,
                  exitFun: Int => Unit,
                  print: String => Unit): Unit = {
-
+    this.print = print
 
     val help = new Option("h", "help", false, "parameter for displaying this help")
     val confDir = new Option("cdir", "confDir", true, "parameter pointing to the configuration directory")
