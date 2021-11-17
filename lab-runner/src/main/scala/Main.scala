@@ -4,11 +4,16 @@ import com.google.gson.JsonParser
 import java.io.{File, FileReader}
 import scala.sys.exit
 
+//Авто форматирование кода!!!
 object Main {
   def main(args: Array[String]): Unit = {
+
     val formatFile = ".json"
 
     val pArgs = new ArgsParser(args)
+
+    //new File дважды - избыточно
+    //Зачем exit передавать и println?
     pArgs.validation(new File(_).isDirectory, new File(_).canExecute, exit(_), println(_))
 
     val configs = new File(pArgs.confDir).listFiles(
@@ -35,6 +40,7 @@ object Main {
     )
   }
 
+  //Используется один раз, зачем обрачивать в отдельный метод?
   def runCommand(command: String): Int = {
     import scala.sys.process._
 
