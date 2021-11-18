@@ -1,7 +1,5 @@
 import org.apache.spark.sql.SparkSession
 
-import scala.io.Source
-
 import scala.util.matching.Regex
 
 
@@ -27,8 +25,6 @@ object Main {
 
     val spark = SparkSession
       .builder()
-      .master("local[*]")
-      .appName("Spark TR02")
       .getOrCreate()
 
     import spark.sqlContext.implicits._
