@@ -9,7 +9,7 @@
 - Суммарный баланс по балансовому счету, к которому относится лицевой счет клиента
 
 ## Параметры командной строки
-jdbc_uri - url сервера вида ```jdbc:postgresql://localhost:5432/postgres```
+jdbc_url - url сервера вида ```jdbc:postgresql://localhost:5432/postgres```
 
 login - логин подключения к базе данных
 
@@ -28,5 +28,5 @@ sbt labTR01/assembly
 spark-submit \
   --class com.example.scalalab.labTR01.Main \
    lab-tr01.jar \
-  jdbc_uri=jdbc:postgresql://localhost:5432/postgres login=postgres password=password path_csv=/path/to/data.csv write_path=/path/to/result
+  jdbc_url=jdbc:postgresql://localhost:5432/postgres login=postgres password=password path_csv=/path/to/data.csv write_path=/path/to/result
 ```

@@ -32,14 +32,12 @@ class ExternalReader(spark: SparkSession) extends Utils {
     df
   }
 
-  //Нет обрабоки ошибок, допустим, что у нас база недоступна
-  //Вывалится эксепшен
   def selectFromDB(params: Map[String, String], query: String): DataFrame = {
 
     spark.read
       .format("jdbc")
       .option("url",
-        getOrThrowErr(params, "jdbc_uri")
+        getOrThrowErr(params, "jdbc_url")
       )
       .option("query", query)
       .option(
