@@ -1,0 +1,15 @@
+{
+  "jar-file-path" : "/home/redcrab/GitHub/scalalab/lab-tr03/target/scala-2.12/labtr03_2.12-0.1.0.jar",
+  "class" : "Main",
+  "app-name" : "LoadTr03App",
+  "spark-params" : {
+    "executor-cores" : "1",
+    "executor-memory" : "1G",
+    "driver-memory" : "1G"
+  },
+  "tr-params" : {
+    "inpath" : "/home/redcrab/test=dir",
+    "mask" : "*.txt",
+    "outpath" : "./out_path"
+  }
+}

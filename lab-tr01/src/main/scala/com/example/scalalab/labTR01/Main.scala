@@ -9,20 +9,28 @@ import org.apache.spark.sql.expressions.Window
 object Main {
 
   def main(args: Array[String]): Unit = {
+
     val params: Map[String, String] = extract(args)
 
+    //Нет обработки, если у нас во входных параметрах нет path_csv
+    //Константы лучше выность в переменные, что при их изменении править в одном месте
     val path = getOrThrowErr(params, "path_csv")
 
+    //Как запускается spark - локально или на сервере тоже вынести в настройки
+    //Наименование приложения вынести в настройки
+    //И то и то будет в конфигурационном файле json, а значит, может быть подставленно раннером
+    //И уже забрано трансформацией внутри себя
     val spark = SparkSession.builder
       .master("local[*]")
       .appName("SparklabTR01")
       .getOrCreate()
 
     val reader = new ExternalReader(spark)
+
     val csv = reader.readCSV(path)
-
+    //Не уверена, что при запуске через раннер, файлы query.sql и balance.sql автоматически найдутся, надо проверить
+    //Зачем нам сортировка ORDER BY name в query.sql ?
     val fioFromDB = reader.selectFromDB(params, getResources("query.sql"))
-
     val balanceFromDB = reader
       .selectFromDB(params, getResources("balance.sql"))
       .withColumn("act_balance", col("act_balance").cast("decimal(25,2)"))
@@ -32,6 +40,7 @@ object Main {
       .join(balanceFromDB, Seq("id"), "left")
 
     val windowSpec  = Window.partitionBy("ledger")
+
     val sum_balancedf:DataFrame = leftJoinDF
       .select("ledger", "act_balance")
       .withColumn("sum_balance",sum("act_balance").over(windowSpec))
@@ -50,8 +59,10 @@ object Main {
         col("act_balance"),
         col("sum_balance")
     )
-
+    //Я все-таки голосую за spark.sql :) Но это не принципиально.
+    //Какая задумка у makeResultWithUDF и чем на не подходит write в DataFrame ?
     val resDF = makeResultWithUDF(select_df)
+
 
     val writePath = getOrThrowErr(params, "write_path")
 

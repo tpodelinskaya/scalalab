@@ -4,6 +4,7 @@ import com.example.scalalab.labTR01.Utils.getOrThrowErr
 import org.apache.spark.sql.types.{DateType, DoubleType, StringType, StructType}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
+//Можно заменить на трейт, каждый раз создавать конкретный экземпляр класса нет смысла
 class ExternalReader(spark: SparkSession) {
 
   def readCSV(path: String): DataFrame = {
@@ -33,6 +34,8 @@ class ExternalReader(spark: SparkSession) {
     df
   }
 
+  //Нет обрабоки ошибок, допустим, что у нас база недоступна
+  //Вывалится эксепшен
   def selectFromDB(params: Map[String, String], query: String): DataFrame = {
 
     spark.read
