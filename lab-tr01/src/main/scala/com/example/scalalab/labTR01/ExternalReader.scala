@@ -1,11 +1,9 @@
 package com.example.scalalab.labTR01
 
-import com.example.scalalab.labTR01.Utils.getOrThrowErr
 import org.apache.spark.sql.types.{DateType, DoubleType, StringType, StructType}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
-//Можно заменить на трейт, каждый раз создавать конкретный экземпляр класса нет смысла
-class ExternalReader(spark: SparkSession) {
+class ExternalReader(spark: SparkSession) extends Utils {
 
   def readCSV(path: String): DataFrame = {
     val schema = new StructType()
