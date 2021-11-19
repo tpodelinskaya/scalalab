@@ -32,4 +32,31 @@ trait Constants {
 
   val RESULT = "result"
 
+  val BIRTHD = "birth_date"
+
+  val INN = "inn"
+
+  val PASSPORT = "passport"
+
+  val BRANCH = "branch"
+
+  val OPEND = "open_date"
+
+  val CLOSED = "close_date"
+
+  val COL9 = "col9"
+
+  val COL10 = "col10"
+
+  val URL = "url"
+
+  val JDBC_URL = "jdbc_url"
+
+  val QUERY = "query"
+
+  val USER = "user"
+
+  val LOGIN = "login"
+
+  val PASSWORD = "password"
 }
