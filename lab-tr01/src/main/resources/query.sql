@@ -6,4 +6,3 @@ SELECT
 FROM customers c
 INNER JOIN accounts a
 ON c.id = a.customer_id
-ORDER BY name

@@ -1,6 +1,6 @@
 {
-  "jar-file-path" : "lab-tr01/target/scala-2.12/labtr01_2.12-0.1.0.jar",
-  "class" : "Main",
+  "jar-file-path" : "lab-tr01/target/scala-2.12/lab-tr01.jar",
+  "class" : "com.example.scalalab.labTR01.Main",
   "app-name" : "LoadTr01App",
   "spark-params" : {
     "executor-cores" : "1",
@@ -8,7 +8,10 @@
     "driver-memory" : "1G"
   },
   "tr-params" : {
-    "jbdc-url" : "jdbc:postgresql://127.0.0.1:5432/db",
-    "jdbc-user" : "admin"
+    "jdbc_url" : "jdbc:postgresql://127.0.0.1:5432/db",
+    "jdbc-user" : "admin",
+    "password": "12345",
+    "path_csv": "/path/to/data.csv",
+    "write_path": "/path/to/result"
   }
 }
