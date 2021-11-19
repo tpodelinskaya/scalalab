@@ -1,0 +1,14 @@
+{
+  "jar-file-path" : "C:\\Users\\valera\\IdeaProjects\\scalalab\\lab-tr02\\target\\scala-2.12\\lab-tr02-assembly.jar",
+  "class" : "Main",
+  "app-name" : "LoadTr02App",
+  "spark-params" : {
+    "executor-cores" : "1",
+    "executor-memory" : "1G",
+    "driver-memory" : "1G"
+  },
+  "tr-params" : {
+    "inpath" : "C:\\Users\\valera\\IdeaProjects\\scalalab\\lab-tr02\\src\\main\\scala\\Simple.html",
+    "outpath" : "out_path"
+  }
+}
