@@ -9,7 +9,9 @@ lazy val scalaLab =
   Project(id = "scalalab", base = file("."))
     .disablePlugins(AssemblyPlugin)
     .settings(name := "scalalab")
-    .aggregate(labRunner, labTR01, labTR02, labTR03)
+    .aggregate(labRunner, labTR01, labTR02, labTR03, labTR04, labTR06)
+
+lazy val commons = (project in file("commons"))
 
 val labRunnerMain = Some("Main")
 
@@ -58,7 +60,39 @@ lazy val labTR03 =
         Spark.SQL,
         Other.scalaTest
       )
-    )
+    ).dependsOn(commons)
+
+val labTR04Main = Some("com.example.scalalab.labTR04.Main")
+
+lazy val labTR04 =
+  (project in file("./lab-tr04"))
+    .enablePlugins(AssemblyPlugin)
+    .settings(
+      mainClass in (Compile, run) := labTR03Main,
+      mainClass in assembly := labTR03Main,
+      assemblyJarName in assembly := s"lab-tr04-assembly.jar",
+      libraryDependencies ++= Seq(
+        Spark.Core,
+        Spark.SQL,
+        Other.scalaTest
+      )
+    ).dependsOn(commons)
+
+val labTR06Main = Some("com.example.scalalab.labTR06.Main")
+
+lazy val labTR06 =
+  (project in file("./lab-tr06"))
+    .enablePlugins(AssemblyPlugin)
+    .settings(
+      mainClass in (Compile, run) := labTR06Main,
+      mainClass in assembly := labTR06Main,
+      assemblyJarName in assembly := s"lab-tr06-assembly.jar",
+      libraryDependencies ++= Seq(
+        Spark.Core,
+        Spark.SQL,
+        Other.scalaTest
+      )
+    ).dependsOn(commons)
 
 val labTR02Main = Some("com.example.scalalab.labTR02.Main")
 lazy val labTR02 =
