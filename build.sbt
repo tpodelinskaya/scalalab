@@ -11,6 +11,8 @@ lazy val scalaLab =
     .settings(name := "scalalab")
     .aggregate(labRunner, labTR01, labTR02, labTR03)
 
+lazy val commons = (project in file("commons"))
+
 val labRunnerMain = Some("Main")
 
 lazy val labRunner =
@@ -58,7 +60,7 @@ lazy val labTR03 =
         Spark.SQL,
         Other.scalaTest
       )
-    )
+    ).dependsOn(commons)
 
 val labTR02Main = Some("com.example.scalalab.labTR02.Main")
 lazy val labTR02 =
